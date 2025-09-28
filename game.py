@@ -47,8 +47,8 @@ class GameSettings:
     FEEDBACK_DURATION = 5000  # 5 seconds
     CLICK_COOLDOWN = 300  # milliseconds
     MIN_GUESS_LENGTH = 2
-    SPOTIFY_CLIENT_ID = "018027c623224686a56a98aedf98f7c4"
-    SPOTIFY_CLIENT_SECRET = "d2249486472948a3883e671bdc685ba6"
+    SPOTIFY_CLIENT_ID = ""
+    SPOTIFY_CLIENT_SECRET = ""
 
 
 class AudioManager:
