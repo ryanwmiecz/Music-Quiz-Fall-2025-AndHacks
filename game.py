@@ -49,6 +49,7 @@ def playAudio():
         player.play()
         song_start = pygame.time.get_ticks()
         playing = True
+        print ("playing")
     else:
         print("No audio loaded to play")
 
@@ -95,7 +96,7 @@ class Game():
         self.playList = {}
 
     def initButtons(self):
-        self.Buttons["start"] = Button.Button(300, 500, 100, 50, "Start Game", pygame.font.SysFont(None, 24), (0, 128, 0), (255, 255, 255)) 
+        self.Buttons["start"] = Button.Button(420, 520, 240, 100, "Start Game", pygame.font.SysFont(None, 24), (0, 128, 0), (255, 255, 255)) 
         self.Buttons["return"] = Button.Button(300, 600, 100, 50, "Return to menu", pygame.font.SysFont(None, 24), (0, 128,0), (255, 255, 255))
         self.Buttons["Play"] = Button.Button(500, 600, 100, 50, "Play", pygame.font.SysFont(None, 24), (0, 128,0), (255, 255, 255))     
 
@@ -106,9 +107,16 @@ class Game():
         return False
 
     def run(self):
+        start_path = "assets\start.png"
+        try:
+            start_image = pygame.image.load(start_path).convert_alpha()
+            start_image = pygame.transform.smoothscale(start_image, (250, 210))
+        except pygame.error as e:
+            print(f"Error loading image: {e}")
+
         print("Starting game...")
         clock = pygame.time.Clock()  # Add FPS limiting
-        input_box = pygame.Rect(700, 600, 100, 50)
+        input_box = pygame.Rect(200,650,680,50)
         color_inactive = pygame.Color('white')
         color_active = pygame.Color('black')
         color = color_inactive
@@ -127,7 +135,7 @@ class Game():
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                 # If the user clicked on the input_box rect.
-                    if input_box.collidepoint(event.pos):
+                    if input_box.collidepoint(event.pos) and self.screenTypes[self.screenType] == "menu":
                         # Toggle the active variable.
                         active = not active
                     else:
@@ -136,10 +144,13 @@ class Game():
                     color = color_active if active else color_inactive
                 if event.type == pygame.KEYDOWN:
                     if active:
-                        if event.key == pygame.K_RETURN:
+                        if event.key == pygame.K_RETURN and self.screenTypes[self.screenType] == "menu":
                             print(text)
                             
                             updatePlaylist(text)
+                            tempUrl, tempTitle = getUrl()
+                            if tempUrl:
+                                loadAudio(tempUrl)
                             text = ''
                             
                         elif event.key == pygame.K_BACKSPACE:
@@ -175,14 +186,32 @@ class Game():
 
             # Screen rendering
             if self.screenTypes[self.screenType] == "menu":
-                self.screen.fill((0, 0, 0))
-                self.Buttons["start"].draw(self.screen)
+                self.screen.fill((5, 102, 141))
+                pygame.draw.circle(self.screen,(0,0,0),(540,300),500)
+                self.screen.blit(start_image, (420, 480))
+                #self.Buttons["start"].draw(self.screen)
+                pygame.draw.rect(self.screen, (235, 242, 250), (200,650,680,50))
+                pygame.draw.rect(self.screen, (0,0,0), (200,650,680,50), 2)
+                pygame.draw.rect(self.screen, (165, 190, 0), (400,600,280,50))
+                pygame.draw.rect(self.screen, (0,0,0), (400,600,280,50), 2)
+                txt_surface = font.render("Insert Playlist Link Below", True, (0,0,0))
+                # Resize the box if the text is too long.
+                # Blit the text.
+                self.screen.blit(txt_surface, (410, 615))
+                txt_surface = font.render(text, True, (0,0,0))
+                # Resize the box if the text is too long.
+                # Blit the text.
+                self.screen.blit(txt_surface, (210, 665))
+                # Blit the input_box rect.
+                
+
 
             elif self.screenTypes[self.screenType] == "game":
-                self.screen.fill((0, 255, 0))
+                pygame.draw.rect(self.screen, (255, 0, 0), (140, 20, 800, 500))
+                self.screen.fill((165, 190, 0))
                 self.Buttons["return"].draw(self.screen)
                 self.Buttons["Play"].draw(self.screen)
-                pygame.draw.rect(self.screen, (255, 0, 0), (140, 20, 800, 500))
+                
                 
 
                 # Show loading status
@@ -192,7 +221,7 @@ class Game():
                     self.screen.blit(loading_text, (400, 300))
 
             # Audio management logic
-            if pygame.time.get_ticks() - song_start >= 5000 and player != "" and playing:
+            if pygame.time.get_ticks() - song_start >= 10000 and player != "" and playing:
                 if player:
                     player.stop()
                 player = ""
@@ -203,14 +232,7 @@ class Game():
                 tempUrl, tempTitle = getUrl()
                 if tempUrl:
                     loadAudio(tempUrl)
-            txt_surface = font.render(text, True, color)
-            # Resize the box if the text is too long.
-            width = max(200, txt_surface.get_width()+10)
-            input_box.w = width
-            # Blit the text.
-            self.screen.blit(txt_surface, (input_box.x+5, input_box.y+5))
-            # Blit the input_box rect.
-            pygame.draw.rect(self.screen, color, input_box, 2)
+            
             pygame.display.update()
             clock.tick(60)  # Limit to 60 FPS
         
