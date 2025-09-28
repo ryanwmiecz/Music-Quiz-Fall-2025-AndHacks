@@ -177,6 +177,9 @@ class AudioManager:
         """Check if current song has exceeded duration limit"""
         return (pygame.time.get_ticks() - self.song_start >= GameSettings.SONG_DURATION and 
                 self.player and self.playing)
+    
+    def isPlaying(self)->bool:
+        return self.playing
 
 
 class FeedbackManager:
@@ -279,8 +282,14 @@ class ImageManager:
         image_configs = [
             ("start", "start.png", (250, 210)),
             ("robot1", "robot1.png", (600, 480)),
+            ("robot2", "robot2.png", (600, 480)),
             ("happy1", "happy1.png", (600, 480)),
-            ("sad1", "sad1.png", (600, 480))
+            ("happy2", "happy2.png", (600, 480)),
+            ("happy3", "happy3.png", (600, 480)),
+            ("happy4", "happy4.png", (600, 480)),
+            ("sad1", "sad1.png", (600, 480)),
+            ("sing1", "sing1.png", (200, 200)),
+            ("sing2", "sing2.png", (200, 200))
         ]
         
         for name, filename, size in image_configs:
@@ -298,6 +307,21 @@ class ImageManager:
         """Get cached image by name"""
         return self.images.get(name)
 
+class Animation:
+    def __init__(self, frames: list[int], rate = 1000):
+        self.frames = frames
+        self.rate = rate
+        self.recentSwitch = 0
+        self.curFrame = 0
+    
+    def update(self):
+        currentTime = pygame.time.get_ticks()
+        if currentTime - self.recentSwitch >= self.rate:
+            self.curFrame = (self.curFrame+1) % len(self.frames)
+            self.recentSwitch = currentTime
+        
+    def getCurrentFrame(self)-> object:
+        return self.frames[self.curFrame]
 
 class Game:
     def __init__(self):
@@ -320,6 +344,10 @@ class Game:
         self.image_manager = ImageManager()
         self.buttons = self._init_buttons()
         
+        #animation
+        self.robot_animation = Animation(["robot1", "robot2"], rate=1000)
+        self.happy_animation = Animation(["happy1", "happy2", "happy3", "happy4"], rate = 500)
+        self.sing_animation = Animation(["sing1","sing2"],rate=500)
         # Fonts (cache them)
         self.font = pygame.font.Font(None, 32)
         self.loading_font = pygame.font.SysFont(None, 36)
@@ -408,6 +436,8 @@ class Game:
                 self.audio_manager.player = None
                 self._update_audio()
     
+
+
     def _handle_text_input(self, text: str) -> None:
         """Handle text input based on current screen"""
         if self.screen_type == ScreenType.MENU:
@@ -454,7 +484,9 @@ class Game:
         pygame.draw.circle(self.screen, GameColors.BLACK, (540, 300), 500)
         
         # Draw images
-        robot_img = self.image_manager.get_image("robot1")
+        self.robot_animation.update()  # ← Updates animation timing
+        current_robot_frame = self.robot_animation.getCurrentFrame()  # ← Gets current frame
+        robot_img = self.image_manager.get_image(current_robot_frame)
         start_img = self.image_manager.get_image("start")
         
         if robot_img:
@@ -478,13 +510,27 @@ class Game:
         # Draw appropriate character based on feedback
         feedback_state = self.feedback_manager.get_feedback_state()
         if feedback_state == FeedbackState.CORRECT:
-            happy_img = self.image_manager.get_image("happy1")
+            self.happy_animation.update()  # ← Updates animation timing
+            current_happy_frame = self.happy_animation.getCurrentFrame()  # ← Gets current frame
+            happy_img = self.image_manager.get_image(current_happy_frame)
             if happy_img:
                 self.screen.blit(happy_img, (250, 50))
         elif feedback_state == FeedbackState.INCORRECT:
             sad_img = self.image_manager.get_image("sad1")
             if sad_img:
                 self.screen.blit(sad_img, (250, 50))
+        if self.audio_manager.isPlaying():
+            self.sing_animation.update()
+            current_sing_frame = self.sing_animation.getCurrentFrame()
+            sing_img = self.image_manager.get_image(current_sing_frame)
+            if sing_img:
+                self.screen.blit(sing_img, (200,400))
+                self.screen.blit(pygame.transform.flip(sing_img, True, False), (700,400))
+        else:
+            temp = self.image_manager.get_image("sing1")
+            self.screen.blit(temp, (200,400))
+            self.screen.blit(pygame.transform.flip(temp, True, False), (700,400))
+        
         
         # Draw buttons
         self.buttons["return"].draw(self.screen)
@@ -509,6 +555,8 @@ class Game:
         print("Starting game...")
         
         while self.running:
+
+            
             self._handle_events()
             self._update_audio()
             
