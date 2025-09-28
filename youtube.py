@@ -3,7 +3,7 @@ from googleapiclient.discovery import build
 import re
 
 # Your YouTube API key
-YOUTUBE_API_KEY = "AIzaSyAV6uM-2gbmb2nSjMvgLyeD4Pf-gri6PQk"
+YOUTUBE_API_KEY = ""
 
 def iso8601_duration_to_seconds(duration):
     """

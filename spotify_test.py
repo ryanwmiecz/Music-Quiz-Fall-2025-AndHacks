@@ -4,6 +4,8 @@ import json
 from datetime import datetime, timedelta
 
 
+
+
 class Song:
     def __init__(self, name, author):
         self.name = name
@@ -13,12 +15,15 @@ class Song:
         return f"{self.name} - {self.author}"
 
 
+
 class SpotifyPlaylistExtractor:
     def __init__(self, client_id, client_secret):
         self.client_id = client_id
         self.client_secret = client_secret
         self.access_token = None
         self.token_expiry = None
+
+
 
     def get_access_token(self):
         """Get Spotify access token"""
@@ -92,21 +97,3 @@ class SpotifyPlaylistExtractor:
             print(f"❌ Error getting songs: {e}")
             return []
 
-
-# Example usage
-if __name__ == "__main__":
-    extractor = SpotifyPlaylistExtractor(
-        client_id="018027c623224686a56a98aedf98f7c4",
-        client_secret="0068d7bd972b454da81de17f6e3193d6"
-    )
-
-    playlist_url = input("Enter Spotify playlist URL: ")
-    songs = extractor.get_songs(playlist_url)
-
-    if songs:
-        print(f"\n🎵 Found {len(songs)} songs:")
-        for song in songs:
-            print(song)
-        print(songs[0])
-    else:
-        print("❌ No songs found!")
