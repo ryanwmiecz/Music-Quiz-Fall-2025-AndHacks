@@ -1,5 +1,5 @@
 import game
-
+import threading
 def main():
     gameInstance = game.Game()
     gameInstance.run()
@@ -8,4 +8,6 @@ def main():
 
 
 if __name__ == "__main__":
-	main()
+	
+    
+    main()
