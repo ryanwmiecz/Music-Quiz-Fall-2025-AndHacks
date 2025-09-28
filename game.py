@@ -111,10 +111,8 @@ class AudioManager:
             time.sleep(0.1)
             
             # Get total length and jump to middle
-            total_length = self.player.get_length()
-            if total_length > 0:
-                middle_time = total_length // 2
-                self.player.set_time(middle_time)
+
+            self.player.set_time(70000)
             
             self.song_start = pygame.time.get_ticks()
             self.playing = True
