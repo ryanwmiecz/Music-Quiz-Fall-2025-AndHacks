@@ -297,12 +297,19 @@ class ImageManager:
             ("light1", "light1.png", (1080, 500)),
             ("light2", "light2.png", (1080, 500)),
             ("band1","band1.png", (1000, 600)),
-            ("band2","band2.png", (1000, 600))
-
+            ("band2","band2.png", (1000, 600)),
+            ("short", "short.png", (250*.8, 210*.8)),
+            ("med", "med.png", (250*.8, 210*.8)),
+            ("long", "long.png", (250*.8, 210*.8)),
+            ("skip", "skip.png", (250*.8, 210*.8)),
+            ("return1", "return1.png", (250*.5, 210*.5)),
+            ("return2", "return2.png", (250*.5, 210*.5)),
         ]
         for i in range(1,19,1):
             image_configs.append(("robot"+str(i),"robot"+str(i)+".png",(600,480)))
-
+        for i in range(1,10,1):
+            image_configs.append(("title"+str(i),"title"+str(i)+".png",(600*1.2,480*1.2)))
+        
         for name, filename, size in image_configs:
             try:
                 img = pygame.image.load(f"{start_path}{filename}").convert_alpha()
@@ -356,6 +363,8 @@ class Game:
         self.buttons = self._init_buttons()
         
         #animation
+        self.title_animation = Animation(["title1","title2","title3","title4","title5","title6","title7","title8","title9"],rate=100)
+        self.menu_animation = Animation(["return1","return2"],rate=2000)
         self.band_animation = Animation(["band1", "band2"], rate = 500)
         self.robot_animation = Animation(["robot1", "robot2", "robot3", "robot4", "robot5",
                                         "robot6", "robot7", "robot8", "robot9", "robot10",
@@ -377,17 +386,17 @@ class Game:
         return {
             "start": Button.Button(420, 520, 240, 100, "Start Game", 
                                  pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
-            "return": Button.Button(50, 650, 100, 50, "Return to menu", 
+            "return": Button.Button(33, 646, 100, 40, "Return to menu", 
                                   pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
             "Play": Button.Button(460, 530, 170, 50, "Play", 
                                 pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
-            "Short": Button.Button(50, 200, 100, 50, "Short", 
+            "Short": Button.Button(33, 446, 160, 40, "Short", 
                                 pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
-            "Medium": Button.Button(50,300, 100, 50, "Medium", 
+            "Medium": Button.Button(33, 496, 160, 40, "Medium", 
                                 pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
-            "Long": Button.Button(50, 400, 100, 50, "Long", 
+            "Long": Button.Button(33, 546, 160, 40, "Long", 
                                 pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
-            "Skip": Button.Button(50, 500, 100, 50, "Skip", 
+            "Skip": Button.Button(33, 596, 160, 40, "Skip", 
                                 pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE)
         }
     
@@ -506,10 +515,18 @@ class Game:
         robot_img = self.image_manager.get_image(current_robot_frame)
         start_img = self.image_manager.get_image("start")
         
+        self.title_animation.update()  # ← Updates animation timing
+        current_title_frame = self.title_animation.getCurrentFrame()  # ← Gets current frame
+        title_img = self.image_manager.get_image(current_title_frame)
+
+
         if robot_img:
-            self.screen.blit(robot_img, (250, 50))
+            self.screen.blit(robot_img, (250, 150))
+        if title_img:
+            self.screen.blit(title_img, (190, -60)) 
         if start_img:
             self.screen.blit(start_img, (420, 480))
+       
         
         # Draw common elements
         self._draw_common_elements()
@@ -567,15 +584,30 @@ class Game:
             if sad_img:
                 self.screen.blit(sad_img, (250, 50))
         
-        
-        
+        short_img = self.image_manager.get_image("short")
+        med_img = self.image_manager.get_image("med")
+        long_img = self.image_manager.get_image("long")
+        skip_img = self.image_manager.get_image("skip")
+        if short_img:
+            self.screen.blit(short_img, (10, 400))
+        if med_img:
+            self.screen.blit(med_img, (10, 450))
+        if long_img:
+            self.screen.blit(long_img, (10, 500))
+        if skip_img:
+            self.screen.blit(skip_img, (10, 550))
+        self.menu_animation.update()  # ← Updates animation timing
+        current_menu_frame = self.menu_animation.getCurrentFrame()  # ← Gets current frame
+        menu_img = self.image_manager.get_image(current_menu_frame)
+        if menu_img:
+            self.screen.blit(menu_img, (30, 610))
         # Draw buttons
-        self.buttons["return"].draw(self.screen)
+        #self.buttons["return"].draw(self.screen)
         #self.buttons["Play"].draw(self.screen)
-        self.buttons["Short"].draw(self.screen)
-        self.buttons["Medium"].draw(self.screen)
-        self.buttons["Long"].draw(self.screen)
-        self.buttons["Skip"].draw(self.screen)
+        #self.buttons["Short"].draw(self.screen)
+        #self.buttons["Medium"].draw(self.screen)
+        #self.buttons["Long"].draw(self.screen)
+        #self.buttons["Skip"].draw(self.screen)
         
         # Draw common elements
         self._draw_common_elements()
