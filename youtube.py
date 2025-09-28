@@ -21,7 +21,7 @@ def iso8601_duration_to_seconds(duration):
         time_data['days'] * 86400 +
         time_data['hours'] * 3600 +
         time_data['minutes'] * 60 +
-        time_data['seconds']
+        time_data['seconds'] * 1000
     )
     return total_seconds
 
