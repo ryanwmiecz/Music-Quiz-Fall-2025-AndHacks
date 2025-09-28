@@ -213,7 +213,7 @@ class InputHandler:
     def __init__(self):
         self.input_box = pygame.Rect(200, 650, 680, 50)
         self.active = False
-        self.text = ""
+        self.text ="Click to type..."
         self.font = pygame.font.Font(None, 32)
         
         # Initialize clipboard
@@ -225,8 +225,10 @@ class InputHandler:
     
     def handle_click(self, pos: Tuple[int, int]) -> None:
         """Handle mouse click on input box"""
-        self.text = ""
+        self.text = "Click to type..."
         self.active = self.input_box.collidepoint(pos)
+        if self.active:
+            self.text = ""
     
     def handle_keydown(self, event: pygame.event.Event) -> Optional[str]:
         """Handle keyboard input, return text if Enter was pressed"""
@@ -235,7 +237,7 @@ class InputHandler:
         
         if event.key == pygame.K_RETURN:
             result = self.text
-            self.text = ""  # Clear input after submission
+            self.text = "Input Entered"  # Clear input after submission
             return result
         elif event.key == pygame.K_BACKSPACE:
             self.text = self.text[:-1]
@@ -281,17 +283,26 @@ class ImageManager:
         start_path = "assets\\"
         image_configs = [
             ("start", "start.png", (250, 210)),
-            ("robot1", "robot1.png", (600, 480)),
-            ("robot2", "robot2.png", (600, 480)),
+            ("play", "play.png", (250, 210)),
             ("happy1", "happy1.png", (600, 480)),
             ("happy2", "happy2.png", (600, 480)),
             ("happy3", "happy3.png", (600, 480)),
             ("happy4", "happy4.png", (600, 480)),
             ("sad1", "sad1.png", (600, 480)),
+            ("sad2", "sad2.png", (600, 480)),
+            ("sad3", "sad3.png", (600, 480)),
             ("sing1", "sing1.png", (200, 200)),
-            ("sing2", "sing2.png", (200, 200))
+            ("sing2", "sing2.png", (200, 200)),
+            ("sing3", "sing3.png", (200, 200)),
+            ("light1", "light1.png", (1080, 500)),
+            ("light2", "light2.png", (1080, 500)),
+            ("band1","band1.png", (1000, 600)),
+            ("band2","band2.png", (1000, 600))
+
         ]
-        
+        for i in range(1,19,1):
+            image_configs.append(("robot"+str(i),"robot"+str(i)+".png",(600,480)))
+
         for name, filename, size in image_configs:
             try:
                 img = pygame.image.load(f"{start_path}{filename}").convert_alpha()
@@ -345,9 +356,15 @@ class Game:
         self.buttons = self._init_buttons()
         
         #animation
-        self.robot_animation = Animation(["robot1", "robot2"], rate=1000)
+        self.band_animation = Animation(["band1", "band2"], rate = 500)
+        self.robot_animation = Animation(["robot1", "robot2", "robot3", "robot4", "robot5",
+                                        "robot6", "robot7", "robot8", "robot9", "robot10",
+                                        "robot11", "robot12", "robot13", "robot14", "robot15",
+                                        "robot16", "robot17", "robot18"], rate=100)
         self.happy_animation = Animation(["happy1", "happy2", "happy3", "happy4"], rate = 500)
-        self.sing_animation = Animation(["sing1","sing2"],rate=500)
+        self.sad_animation = Animation (["sad1","sad2","sad3"], rate=500)
+        self.sing_animation = Animation(["sing1","sing2", "sing3"],rate=150)
+        self.light_animation = Animation(["light1", "light2"], rate =3000)
         # Fonts (cache them)
         self.font = pygame.font.Font(None, 32)
         self.loading_font = pygame.font.SysFont(None, 36)
@@ -362,7 +379,7 @@ class Game:
                                  pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
             "return": Button.Button(50, 650, 100, 50, "Return to menu", 
                                   pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
-            "Play": Button.Button(500, 500, 100, 50, "Play", 
+            "Play": Button.Button(460, 530, 170, 50, "Play", 
                                 pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
             "Short": Button.Button(50, 200, 100, 50, "Short", 
                                 pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
@@ -503,26 +520,22 @@ class Game:
     def _draw_game(self) -> None:
         """Draw the game screen"""
         self.screen.fill(GameColors.DARK_GRAY)
-        
+        pygame.draw.rect(self.screen, (GameColors.BLACK), (0,0,1080,360))
+        #pygame.draw.rect(self.screen, GameColors.BLACK, (100,110,880,250))
+
         # Draw main game area
-        pygame.draw.rect(self.screen, GameColors.RED, (140, 20, 800, 500))
         
         # Draw appropriate character based on feedback
         feedback_state = self.feedback_manager.get_feedback_state()
-        if feedback_state == FeedbackState.CORRECT:
-            self.happy_animation.update()  # ← Updates animation timing
-            current_happy_frame = self.happy_animation.getCurrentFrame()  # ← Gets current frame
-            happy_img = self.image_manager.get_image(current_happy_frame)
-            if happy_img:
-                self.screen.blit(happy_img, (250, 50))
-        elif feedback_state == FeedbackState.INCORRECT:
-            sad_img = self.image_manager.get_image("sad1")
-            if sad_img:
-                self.screen.blit(sad_img, (250, 50))
         if self.audio_manager.isPlaying():
             self.sing_animation.update()
             current_sing_frame = self.sing_animation.getCurrentFrame()
             sing_img = self.image_manager.get_image(current_sing_frame)
+            self.band_animation.update()
+            current_band_frame = self.band_animation.getCurrentFrame()
+            band_img = self.image_manager.get_image(current_band_frame)
+            if band_img:
+                self.screen.blit(band_img, (50,0))
             if sing_img:
                 self.screen.blit(sing_img, (200,400))
                 self.screen.blit(pygame.transform.flip(sing_img, True, False), (700,400))
@@ -530,11 +543,35 @@ class Game:
             temp = self.image_manager.get_image("sing1")
             self.screen.blit(temp, (200,400))
             self.screen.blit(pygame.transform.flip(temp, True, False), (700,400))
+            temp = self.image_manager.get_image("band1")
+            self.screen.blit(temp, (50,0))
+        self.light_animation.update()  # ← Updates animation timing
+        current_light_frame = self.light_animation.getCurrentFrame()  # ← Gets current frame
+        light_img = self.image_manager.get_image(current_light_frame)
+
+        play_img = self.image_manager.get_image("play")
+        if play_img:
+            self.screen.blit(play_img, (420, 450))
+        if light_img:
+            self.screen.blit(light_img, (0, -100))
+        if feedback_state == FeedbackState.CORRECT:
+            self.happy_animation.update()  # ← Updates animation timing
+            current_happy_frame = self.happy_animation.getCurrentFrame()  # ← Gets current frame
+            happy_img = self.image_manager.get_image(current_happy_frame)
+            if happy_img:
+                self.screen.blit(happy_img, (250, 50))
+        elif feedback_state == FeedbackState.INCORRECT:
+            self.sad_animation.update()  # ← Updates animation timing
+            current_sad_frame = self.sad_animation.getCurrentFrame()  # ← Gets current frame
+            sad_img = self.image_manager.get_image(current_sad_frame)
+            if sad_img:
+                self.screen.blit(sad_img, (250, 50))
+        
         
         
         # Draw buttons
         self.buttons["return"].draw(self.screen)
-        self.buttons["Play"].draw(self.screen)
+        #self.buttons["Play"].draw(self.screen)
         self.buttons["Short"].draw(self.screen)
         self.buttons["Medium"].draw(self.screen)
         self.buttons["Long"].draw(self.screen)
