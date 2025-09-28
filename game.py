@@ -222,6 +222,7 @@ class InputHandler:
     
     def handle_click(self, pos: Tuple[int, int]) -> None:
         """Handle mouse click on input box"""
+        self.text = ""
         self.active = self.input_box.collidepoint(pos)
     
     def handle_keydown(self, event: pygame.event.Event) -> Optional[str]:
@@ -334,6 +335,14 @@ class Game:
             "return": Button.Button(50, 650, 100, 50, "Return to menu", 
                                   pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
             "Play": Button.Button(500, 500, 100, 50, "Play", 
+                                pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
+            "Short": Button.Button(50, 200, 100, 50, "Short", 
+                                pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
+            "Medium": Button.Button(50,300, 100, 50, "Medium", 
+                                pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
+            "Long": Button.Button(50, 400, 100, 50, "Long", 
+                                pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE),
+            "Skip": Button.Button(50, 500, 100, 50, "Skip", 
                                 pygame.font.SysFont(None, 24), GameColors.GREEN, GameColors.WHITE)
         }
     
@@ -388,6 +397,16 @@ class Game:
                 self.audio_manager.play_audio()
             elif self.buttons["return"].is_clicked(event):
                 self.screen_type = ScreenType.MENU
+            elif self.buttons["Short"].is_clicked(event):
+                GameSettings.SONG_DURATION = 10000
+            elif self.buttons["Medium"].is_clicked(event):
+                GameSettings.SONG_DURATION = 30000
+            elif self.buttons["Long"].is_clicked(event):
+                GameSettings.SONG_DURATION = 50000
+            elif self.buttons["Skip"].is_clicked(event):
+                self.audio_manager.stop_audio()
+                self.audio_manager.player = None
+                self._update_audio()
     
     def _handle_text_input(self, text: str) -> None:
         """Handle text input based on current screen"""
@@ -470,6 +489,10 @@ class Game:
         # Draw buttons
         self.buttons["return"].draw(self.screen)
         self.buttons["Play"].draw(self.screen)
+        self.buttons["Short"].draw(self.screen)
+        self.buttons["Medium"].draw(self.screen)
+        self.buttons["Long"].draw(self.screen)
+        self.buttons["Skip"].draw(self.screen)
         
         # Draw common elements
         self._draw_common_elements()
